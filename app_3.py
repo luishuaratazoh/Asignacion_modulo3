@@ -16,7 +16,8 @@ import pytz #esto sirve para importar la biblioteca pytz, que se utiliza para ma
 import os
 
 # Configurar la base de datos
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:vDpBWXODHwyOZYezXqrsSVHdcurxeNhH@kodama.proxy.rlwy.net:46949/railway"
+#SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:vDpBWXODHwyOZYezXqrsSVHdcurxeNhH@kodama.proxy.rlwy.net:46949/railway"
+SQLALCHEMY_DATABASE_URL=os.environ["SQLALCHEMY_DATABASE_URL"]#esto sirve para obtener la URL de la base de datos desde una variable de entorno, lo que es una práctica recomendada para mantener la seguridad y flexibilidad en la configuración de la aplicación FastAPI.
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)#esto sirve para crear una conexión a la base de datos 
 #SQLite utilizando SQLAlchemy, lo que permite interactuar con la base de datos en la aplicación FastAPI.
@@ -95,7 +96,16 @@ async def predict_bancknote(file: UploadFile = File(...)):
         index=False
         )#esto sirve para guardar el DataFrame de predicciones en una tabla llamada "predictions" en la base de datos utilizando SQLAlchemy, lo que permite almacenar los resultados de las predicciones de manera persistente y consultable en la base de datos.
 
+
+
     return {
-        "predictions": predictions.tolist(),
-        "timestamp": now
+        "timestamp": now,
+        "results": [
+            {"input": row_input, "prediction": pred}
+            for row_input, pred in zip(df.to_dict(orient="records"), predictions.tolist())
+        ]
     }
+    #return {
+    #    "predictions": predictions.tolist(),
+    #    "timestamp": now
+    #}
